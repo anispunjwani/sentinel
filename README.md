@@ -138,6 +138,30 @@ The script will ask for your name, email, and a password. This creates:
 - 3 default message templates
 - Your first admin account
 
+### Step 7 — Run the dashboard (frontend)
+
+The frontend is a small React app in the `frontend/` folder. You need
+[Node.js 18+](https://nodejs.org) installed.
+
+Open a **new terminal** (keep the backend running):
+
+```bash
+cd frontend
+npm install        # first time only
+npm run dev
+```
+
+Open **http://localhost:5173** and sign in with the admin email and password you
+created in Step 6.
+
+By default the app talks to the backend at `http://localhost:8000`. To point it
+elsewhere, copy `frontend/.env.example` to `frontend/.env` and set `VITE_API_URL`.
+
+The dashboard shows events grouped by tier (Active / Monitor / Digest). You can
+review items, escalate them one tier, and generate a message from a template to
+copy and send. (Configuration screens and phone push notifications are not built
+yet — see the roadmap in `CLAUDE.md`.)
+
 ---
 
 ## 3. Deploy to Railway

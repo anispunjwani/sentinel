@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.workers.scheduler import start_scheduler, stop_scheduler
+from app.api import auth, events, config as config_router, templates, export, digest
 
 
 @asynccontextmanager
@@ -35,11 +36,19 @@ async def health_check():
     return {"status": "ok", "app": settings.APP_NAME}
 
 
-# Routers will be registered here as each phase is built
-# from app.api import events, teams, users, push, templates, export
-# app.include_router(events.router, prefix="/api")
-# app.include_router(teams.router, prefix="/api")
-# app.include_router(users.router, prefix="/api")
+# ── API routers (registered per phase) ───────────────────────────────────────
+# Phase A: auth + events (read) + config (read)
+app.include_router(auth.router, prefix="/api")
+app.include_router(events.router, prefix="/api")
+app.include_router(config_router.router, prefix="/api")
+
+# Phase B: review + escalate (in events) + templates
+app.include_router(templates.router, prefix="/api")
+
+# Phase C: manual entry (in events), config mutations (in config), export, digest
+app.include_router(export.router, prefix="/api")
+app.include_router(digest.router, prefix="/api")
+
+# Later phases:
 # app.include_router(push.router, prefix="/api")
-# app.include_router(templates.router, prefix="/api")
 # app.include_router(export.router, prefix="/api")
