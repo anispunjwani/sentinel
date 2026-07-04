@@ -79,7 +79,10 @@ class User(Base):
     email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
-    role: Mapped[UserRole] = mapped_column(Enum(UserRole), default=UserRole.MEMBER)
+    role: Mapped[UserRole] = mapped_column(
+        Enum(UserRole, values_callable=lambda obj: [e.value for e in obj]),
+        default=UserRole.MEMBER,
+    )
     digest_time: Mapped[str] = mapped_column(String(5), default="09:00")  # HH:MM
     timezone: Mapped[str] = mapped_column(String(50), default="America/New_York")
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
@@ -109,7 +112,10 @@ class Event(Base):
     team_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("teams.id"), nullable=False)
     source: Mapped[str] = mapped_column(String(100), nullable=False)       # nws, fema, rss, manual
     event_type: Mapped[str] = mapped_column(String(255), nullable=False)   # e.g. "Tornado Warning"
-    tier: Mapped[AlertTier] = mapped_column(Enum(AlertTier), nullable=False)
+    tier: Mapped[AlertTier] = mapped_column(
+        Enum(AlertTier, values_callable=lambda obj: [e.value for e in obj]),
+        nullable=False,
+    )
     county_fips: Mapped[str] = mapped_column(String(5), nullable=True)
     county_name: Mapped[str] = mapped_column(String(255), nullable=True)
     state_code: Mapped[str] = mapped_column(String(2), nullable=True)

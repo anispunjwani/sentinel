@@ -5,7 +5,7 @@ No API key required.
 """
 import httpx
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.models.models import Event, Team, TeamCounty, AlertTier
@@ -17,20 +17,20 @@ logger = logging.getLogger(__name__)
 NWS_ALERTS_URL = "https://api.weather.gov/alerts/active"
 
 
-async def fetch_nws_alerts(fips_codes: list[str]) -> list[dict]:
+async def fetch_nws_alerts(zone_codes: list[str]) -> list[dict]:
     """
-    Fetch active NWS alerts for a list of county FIPS codes.
-    NWS accepts comma-separated FIPS codes in the 'county' parameter.
+    Fetch active NWS alerts for a list of county UGC zone codes.
+    api.weather.gov has no 'county' parameter; county-level filtering uses the
+    'zone' parameter with UGC codes (e.g. 'MAC025' for Suffolk County, MA).
     Max ~50 per request; we chunk if needed.
     """
     alerts = []
     chunk_size = 50
-    chunks = [fips_codes[i:i+chunk_size] for i in range(0, len(fips_codes), chunk_size)]
+    chunks = [zone_codes[i:i+chunk_size] for i in range(0, len(zone_codes), chunk_size)]
 
     async with httpx.AsyncClient(timeout=30) as client:
         for chunk in chunks:
-            # NWS expects FIPS prefixed with state FIPS; county param uses full 5-digit FIPS
-            params = {"county": ",".join(chunk)}
+            params = {"zone": ",".join(chunk)}
             try:
                 resp = await client.get(NWS_ALERTS_URL, params=params, headers={
                     "User-Agent": "Sentinel Disaster Management Dashboard (contact@sentinel.app)",
@@ -43,6 +43,16 @@ async def fetch_nws_alerts(fips_codes: list[str]) -> list[dict]:
                 logger.error(f"NWS fetch error for chunk {chunk}: {e}")
 
     return alerts
+
+
+def _parse_nws_time(value: str | None) -> datetime | None:
+    """Parse an NWS ISO timestamp into a naive UTC datetime (matches our columns)."""
+    if not value:
+        return None
+    dt = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    if dt.tzinfo is not None:
+        dt = dt.astimezone(timezone.utc).replace(tzinfo=None)
+    return dt
 
 
 def parse_nws_alert(feature: dict, team_id: str) -> dict | None:
@@ -63,11 +73,9 @@ def parse_nws_alert(feature: dict, team_id: str) -> dict | None:
     fips_list = geocode.get("SAME", [])  # SAME codes are 6-digit, first digit is country, next 5 are county FIPS
     county_fips = fips_list[0][1:] if fips_list else None  # strip leading 0
 
-    # Parse times
-    sent = props.get("sent")
-    expires = props.get("expires")
-    issued_at = datetime.fromisoformat(sent.replace("Z", "+00:00")) if sent else None
-    expires_at = datetime.fromisoformat(expires.replace("Z", "+00:00")) if expires else None
+    # Parse times. NWS returns tz-aware ISO strings; our columns are naive UTC.
+    issued_at = _parse_nws_time(props.get("sent"))
+    expires_at = _parse_nws_time(props.get("expires"))
 
     tier = classify_nws_event(event_type)
 
@@ -100,12 +108,14 @@ async def run_nws_worker():
                 select(TeamCounty).where(TeamCounty.team_id == team.id)
             )
             counties = counties_result.scalars().all()
-            fips_codes = [c.fips_code for c in counties]
+            # NWS zone filtering uses UGC county codes: <state><C><last 3 FIPS digits>
+            # e.g. Suffolk County MA (state MA, FIPS 25025) -> "MAC025"
+            zone_codes = [f"{c.state_code}C{c.fips_code[-3:]}" for c in counties]
 
-            if not fips_codes:
+            if not zone_codes:
                 continue
 
-            alerts = await fetch_nws_alerts(fips_codes)
+            alerts = await fetch_nws_alerts(zone_codes)
             new_count = 0
 
             for feature in alerts:
