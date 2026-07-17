@@ -1,10 +1,7 @@
-import asyncio
 import os
 from logging.config import fileConfig
 
-from sqlalchemy import pool
-from sqlalchemy.engine import Connection
-from sqlalchemy.ext.asyncio import async_engine_from_config
+from sqlalchemy import engine_from_config, pool
 
 from alembic import context
 
@@ -17,11 +14,13 @@ from app.models.models import (  # noqa: F401
 
 config = context.config
 
-# Read DATABASE_URL from environment and inject into alembic config
+# Read DATABASE_URL from the environment and force a SYNCHRONOUS (psycopg2) driver
+# for migrations, regardless of what the app uses at runtime (asyncpg). Async
+# migrations against a remote DB can stall; the sync path is simple and reliable.
 database_url = os.environ.get("DATABASE_URL", "")
-# Alembic needs the asyncpg dialect for async support
-if database_url.startswith("postgresql://"):
-    database_url = database_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+database_url = database_url.replace("postgresql+asyncpg://", "postgresql://", 1)
+if database_url.startswith("postgres://"):  # some providers use the older scheme
+    database_url = database_url.replace("postgres://", "postgresql://", 1)
 config.set_main_option("sqlalchemy.url", database_url)
 
 if config.config_file_name is not None:
@@ -42,25 +41,16 @@ def run_migrations_offline() -> None:
         context.run_migrations()
 
 
-def do_run_migrations(connection: Connection) -> None:
-    context.configure(connection=connection, target_metadata=target_metadata)
-    with context.begin_transaction():
-        context.run_migrations()
-
-
-async def run_async_migrations() -> None:
-    connectable = async_engine_from_config(
+def run_migrations_online() -> None:
+    connectable = engine_from_config(
         config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )
-    async with connectable.connect() as connection:
-        await connection.run_sync(do_run_migrations)
-    await connectable.dispose()
-
-
-def run_migrations_online() -> None:
-    asyncio.run(run_async_migrations())
+    with connectable.connect() as connection:
+        context.configure(connection=connection, target_metadata=target_metadata)
+        with context.begin_transaction():
+            context.run_migrations()
 
 
 if context.is_offline_mode():
