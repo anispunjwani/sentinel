@@ -52,7 +52,10 @@ async function apiFetch(path, options = {}) {
     const err = await res.json().catch(() => ({ detail: res.statusText }));
     throw new Error(formatError(err.detail) || "Request failed");
   }
-  return res.json();
+  // 204 No Content (e.g. DELETE) has an empty body — don't try to parse it.
+  if (res.status === 204) return null;
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
 }
 
 // FastAPI returns `detail` as a string (HTTPException) or an array of
@@ -108,6 +111,27 @@ export async function getMe() {
   return apiFetch("/api/auth/me");
 }
 
+// ── Center enrichment (live mode) ────────────────────────────────────────────
+// The backend has no concept of centers (they are a client-side, per-user grouping
+// of counties — see CLAUDE.md). Real events carry only county_fips, so we derive
+// each event's center_name here by matching its county against the saved centers.
+
+function centerNameForFips(fips, centers) {
+  if (!fips) return null;
+  for (const c of centers) {
+    if ((c.counties || []).some(co => co.fips === fips)) return c.name;
+  }
+  return null;
+}
+
+async function enrichEventsWithCenter(events) {
+  const centers = await initCenters(); // idempotent; seeds from mock centers.json
+  return events.map(e => ({
+    ...e,
+    center_name: e.center_name || centerNameForFips(e.county_fips, centers),
+  }));
+}
+
 // ── Events ───────────────────────────────────────────────────────────────────
 
 export async function getEvents(filters = {}) {
@@ -121,8 +145,16 @@ export async function getEvents(filters = {}) {
     }
     return { ...data, events, total: events.length };
   }
-  const params = new URLSearchParams(filters).toString();
-  return apiFetch(`/api/events${params ? `?${params}` : ""}`);
+  // Backend supports these query params; center_name/county_fips_list are handled
+  // client-side (they are not backend concepts).
+  const params = new URLSearchParams();
+  for (const key of ["tier", "county_fips", "source", "reviewed", "limit", "offset"]) {
+    if (filters[key] !== undefined) params.set(key, filters[key]);
+  }
+  const q = params.toString();
+  // The backend returns a bare array; the UI expects { events, total }.
+  const events = await enrichEventsWithCenter(await apiFetch(`/api/events${q ? `?${q}` : ""}`));
+  return { events, total: events.length };
 }
 
 export async function getEvent(id) {
@@ -132,7 +164,8 @@ export async function getEvent(id) {
     if (!event) throw new Error("Event not found");
     return event;
   }
-  return apiFetch(`/api/events/${id}`);
+  const [event] = await enrichEventsWithCenter([await apiFetch(`/api/events/${id}`)]);
+  return event;
 }
 
 export async function escalateEvent(id) {
@@ -141,7 +174,12 @@ export async function escalateEvent(id) {
     const event = await getEvent(id);
     return { ...event, tier: "active", reviewed: true, reviewed_by: "Anis Punjwani" };
   }
-  return apiFetch(`/api/events/${id}/escalate`, { method: "POST" });
+  // The UI's "Escalate to Active" action; backend requires the target tier and
+  // that it be more severe than the current one (always true from Monitor/Digest).
+  return apiFetch(`/api/events/${id}/escalate`, {
+    method: "POST",
+    body: JSON.stringify({ tier: "active" }),
+  });
 }
 
 export async function deescalateEvent(id) {
@@ -149,24 +187,50 @@ export async function deescalateEvent(id) {
     const event = await getEvent(id);
     return { ...event, tier: "digest", reviewed: true };
   }
-  return apiFetch(`/api/events/${id}/review`, {
-    method: "PATCH",
-    body: JSON.stringify({ tier: "digest" }),
-  });
+  return apiFetch(`/api/events/${id}/deescalate`, { method: "POST" });
 }
 
 // ── Digest ───────────────────────────────────────────────────────────────────
 
 export async function getDigest() {
   if (USE_MOCKS) return mockFetch("digest.json");
-  return apiFetch("/api/digest");
+  // The backend /api/digest returns only Digest-tier events grouped by county.
+  // The UI wants all tiers from the last 24h grouped by CENTER, so compute it
+  // client-side from the enriched event list (centers are client-side only).
+  const events = await enrichEventsWithCenter(await apiFetch("/api/events"));
+  const since = Date.now() - 24 * 60 * 60 * 1000;
+  const recent = events.filter(e => new Date(e.created_at).getTime() >= since);
+
+  const byCenter = {};
+  for (const e of recent) {
+    const name = e.center_name || e.county_name || e.state_code || "Other";
+    const bucket = (byCenter[name] ||= {});
+    const key = `${e.event_type}|${e.tier}`;
+    bucket[key] = (bucket[key] || 0) + 1;
+  }
+
+  const by_center = Object.entries(byCenter).map(([center_name, counts]) => {
+    const breakdown = Object.entries(counts).map(([k, count]) => {
+      const [event_type, tier] = k.split("|");
+      return { event_type, tier, count };
+    });
+    return { center_name, total: breakdown.reduce((s, b) => s + b.count, 0), breakdown };
+  });
+
+  return {
+    total_events: recent.length,
+    generated_at: new Date().toISOString(),
+    by_center,
+  };
 }
 
 // ── Templates ────────────────────────────────────────────────────────────────
 
 export async function getTemplates() {
   if (USE_MOCKS) return mockFetch("templates.json");
-  return apiFetch("/api/templates");
+  // Backend returns a bare array; consumers expect { templates: [...] }.
+  const templates = await apiFetch("/api/templates");
+  return { templates };
 }
 
 export async function createTemplate(data) {
@@ -227,7 +291,16 @@ export async function renderTemplate(templateId, eventId) {
 
 export async function getCounties() {
   if (USE_MOCKS) return mockFetch("counties.json");
-  return apiFetch("/api/config/counties");
+  // Backend returns a bare array of {fips_code, county_name, state_code}; the
+  // Centers UI expects { counties: [{fips, name, state, state_name}] }.
+  const rows = await apiFetch("/api/config/counties");
+  const counties = rows.map(c => ({
+    fips: c.fips_code,
+    name: c.county_name,
+    state: c.state_code,
+    state_name: c.state_code, // backend has no full state name; code is searchable
+  }));
+  return { counties };
 }
 
 // ── Centers (always localStorage — no backend endpoint) ──────────────────────
