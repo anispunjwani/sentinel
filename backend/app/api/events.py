@@ -166,3 +166,21 @@ async def escalate_event(
         )
 
     return event
+
+
+@router.post("/{event_id}/deescalate", response_model=EventOut)
+async def deescalate_event(
+    event_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    """Dismiss an event by demoting it to the Digest tier (a human action, so it
+    also marks the event reviewed). Does not delete or hide the event."""
+    event = await _get_team_event(event_id, db, user)
+    event.tier = AlertTier.DIGEST
+    event.reviewed = True
+    event.reviewed_by = user.name
+    event.reviewed_at = datetime.utcnow()
+    await db.commit()
+    await db.refresh(event)
+    return event
