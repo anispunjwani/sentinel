@@ -1,5 +1,8 @@
 FROM python:3.11-slim
 
+# Stream stdout/stderr immediately so Railway/Docker logs are not buffered.
+ENV PYTHONUNBUFFERED=1
+
 WORKDIR /app
 
 # Install system dependencies
