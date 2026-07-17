@@ -21,6 +21,7 @@ class UserOut(BaseModel):
 
     id: uuid.UUID
     team_id: uuid.UUID
+    team_name: str | None = None  # populated from the user's Team in /auth/me
     email: str
     name: str
     role: UserRole
@@ -90,6 +91,16 @@ class TemplateOut(BaseModel):
     name: str
     body: str
     created_at: datetime
+
+
+class TemplateCreate(BaseModel):
+    name: str
+    body: str
+
+
+class TemplateUpdate(BaseModel):
+    name: str | None = None
+    body: str | None = None
 
 
 class RenderRequest(BaseModel):

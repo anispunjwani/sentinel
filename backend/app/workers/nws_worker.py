@@ -71,6 +71,11 @@ def parse_nws_alert(feature: dict, team_id: str) -> dict | None:
     if not props:
         return None
 
+    # Skip non-actual alerts (Test / Exercise / System / Draft) — these are the
+    # "TEST MESSAGE" products NWS broadcasts, not real events.
+    if props.get("status", "Actual") != "Actual":
+        return None
+
     event_type = props.get("event", "Unknown")
     headline = props.get("headline") or props.get("event", "NWS Alert")
     summary = props.get("description", "")

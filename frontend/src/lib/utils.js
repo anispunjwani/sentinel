@@ -49,6 +49,26 @@ export function tierPriority(tier) {
   return { active: 0, monitor: 1, digest: 2 }[tier] ?? 3
 }
 
+/** Whether an event should still be shown on the dashboard.
+ *  Hidden once its underlying alert has expired, or (for Digest) once it is
+ *  older than `digestMaxDays` days — so stale, no-longer-relevant cards clear. */
+export function isCurrentEvent(event, digestMaxDays = 3) {
+  const now = Date.now()
+  if (event.expires_at && new Date(event.expires_at).getTime() < now) return false
+  if (event.tier === 'digest') {
+    const stamped = event.issued_at || event.created_at
+    if (stamped && now - new Date(stamped).getTime() > digestMaxDays * 86400000) return false
+  }
+  return true
+}
+
+/** Sort comparator: most urgent tier first, then most recent first. */
+export function byTierThenRecent(a, b) {
+  const t = tierPriority(a.tier) - tierPriority(b.tier)
+  if (t !== 0) return t
+  return new Date(b.issued_at || b.created_at) - new Date(a.issued_at || a.created_at)
+}
+
 /** Copy text to clipboard */
 export async function copyToClipboard(text) {
   try {

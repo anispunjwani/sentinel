@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.core.security import create_access_token, get_current_user, verify_password
-from app.models.models import User
+from app.models.models import Team, User
 from app.schemas import Token, UserOut
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -33,5 +33,11 @@ async def login(
 
 
 @router.get("/me", response_model=UserOut)
-async def read_me(user: User = Depends(get_current_user)):
-    return user
+async def read_me(
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    team = await db.get(Team, user.team_id)
+    out = UserOut.model_validate(user)
+    out.team_name = team.name if team else None
+    return out

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { getEvents, getDigest, initCenters } from '../lib/api'
-import { tierPriority } from '../lib/utils'
+import { isCurrentEvent, byTierThenRecent } from '../lib/utils'
 import EventCard from '../components/events/EventCard'
 import EventDetail from '../components/events/EventDetail'
 import CenterCard from '../components/dashboard/CenterCard'
@@ -22,7 +22,9 @@ export default function DashboardPage() {
         getDigest(),
         initCenters(),
       ])
-      setEvents(eventsData.events || [])
+      // Drop expired alerts and stale digest cards so the dashboard only shows
+      // what's still current.
+      setEvents((eventsData.events || []).filter(e => isCurrentEvent(e)))
       setDigest(digestData)
       setCenters(centersData)
     } finally {
@@ -40,14 +42,14 @@ export default function DashboardPage() {
     setEvents(prev => prev.map(e => e.id === eventId ? { ...e, tier: newTier } : e))
   }
 
-  const activeEvents = events.filter(e => e.tier === 'active')
+  const activeEvents = events.filter(e => e.tier === 'active').sort(byTierThenRecent)
 
-  // Build per-center event lists
+  // Build per-center event lists (most urgent first, then most recent).
   function eventsForCenter(center) {
     const fipsList = center.counties.map(c => c.fips)
     return events
       .filter(e => fipsList.includes(e.county_fips))
-      .sort((a, b) => tierPriority(a.tier) - tierPriority(b.tier))
+      .sort(byTierThenRecent)
   }
 
   if (loading) return (
