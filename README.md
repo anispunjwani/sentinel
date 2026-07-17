@@ -233,19 +233,19 @@ free-tier notes in `CLAUDE.md`):
 | `MAX_SUMMARY_LENGTH` | `2000` | Truncate stored event summaries to this many characters |
 | `STORE_UNMATCHED_RSS` | `false` | Keep keyword-unmatched news articles (much larger DB if `true`) |
 
-### Step 5 — Run the migration on Railway
+### Step 5 — Database migration (automatic)
+
+Migrations run automatically every time the service boots (see `railway.toml`),
+so there is nothing to do here — the tables are created on first deploy. You can
+confirm in the deploy logs that `alembic upgrade head` ran before uvicorn started.
+
+### Step 6 — Seed the Railway database
+
+Seeding is a one-time manual step (it creates your team and admin account):
 
 1. In Railway, click your backend service
 2. Go to the **Shell** tab
 3. Run:
-
-```bash
-alembic upgrade head
-```
-
-### Step 6 — Seed the Railway database
-
-In the same Railway Shell:
 
 ```bash
 python seed.py

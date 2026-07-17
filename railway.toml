@@ -3,7 +3,10 @@ builder = "dockerfile"
 dockerfilePath = "backend/Dockerfile"
 
 [deploy]
-startCommand = "uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+# Run DB migrations on every boot (idempotent — no-op if already at head), then
+# start the API. This makes a fresh deploy or a later schema change self-heal
+# without a manual `alembic upgrade head` in the Railway shell.
+startCommand = "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
 healthcheckPath = "/health"
 healthcheckTimeout = 30
 restartPolicyType = "on_failure"
