@@ -233,25 +233,34 @@ free-tier notes in `CLAUDE.md`):
 | `MAX_SUMMARY_LENGTH` | `2000` | Truncate stored event summaries to this many characters |
 | `STORE_UNMATCHED_RSS` | `false` | Keep keyword-unmatched news articles (much larger DB if `true`) |
 
-### Step 5 — Database migration (automatic)
+### Step 5 — Run the migration on Railway (one time)
 
-Migrations run automatically every time the service boots (see `railway.toml`),
-so there is nothing to do here — the tables are created on first deploy. You can
-confirm in the deploy logs that `alembic upgrade head` ran before uvicorn started.
-
-### Step 6 — Seed the Railway database
-
-Seeding is a one-time manual step (it creates your team and admin account):
+The service starts uvicorn directly; migrations are a separate one-time step so a
+slow or lock-blocked migration can never hang the web service. After the deploy is
+healthy (`/health` responds):
 
 1. In Railway, click your backend service
 2. Go to the **Shell** tab
 3. Run:
 
 ```bash
+alembic upgrade head
+```
+
+You should see `Running upgrade -> 0001_initial`. If it appears to hang, a previous
+deploy may be holding a lock — restart the PostgreSQL service to clear stale
+connections, then run it again.
+
+### Step 6 — Seed the Railway database
+
+In the same Railway Shell (after the migration succeeds):
+
+```bash
 python seed.py
 ```
 
-Enter your name, email, and password when prompted.
+Enter your name, email, and password when prompted — this creates your team and
+admin account.
 
 ### Step 7 — Get your public URL
 
