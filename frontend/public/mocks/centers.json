@@ -1,0 +1,92 @@
+{
+  "centers": [
+    {
+      "id": "center-001",
+      "name": "NYC",
+      "user_id": "ae6b8e59-13de-4ce8-902f-1e74ac3f96a5",
+      "counties": [
+        { "fips": "36005", "name": "Bronx County", "state": "NY" },
+        { "fips": "36047", "name": "Kings County", "state": "NY" },
+        { "fips": "36061", "name": "New York County", "state": "NY" },
+        { "fips": "36081", "name": "Queens County", "state": "NY" },
+        { "fips": "36085", "name": "Richmond County", "state": "NY" }
+      ],
+      "created_at": "2026-07-01T00:00:00Z"
+    },
+    {
+      "id": "center-002",
+      "name": "Richmond",
+      "user_id": "ae6b8e59-13de-4ce8-902f-1e74ac3f96a5",
+      "counties": [
+        { "fips": "51087", "name": "Henrico County", "state": "VA" },
+        { "fips": "51041", "name": "Chesterfield County", "state": "VA" },
+        { "fips": "51085", "name": "Hanover County", "state": "VA" },
+        { "fips": "51760", "name": "Richmond City", "state": "VA" }
+      ],
+      "created_at": "2026-07-01T00:00:00Z"
+    },
+    {
+      "id": "center-003",
+      "name": "DC Metro",
+      "user_id": "ae6b8e59-13de-4ce8-902f-1e74ac3f96a5",
+      "counties": [
+        { "fips": "11001", "name": "Washington DC", "state": "DC" },
+        { "fips": "51013", "name": "Arlington County", "state": "VA" },
+        { "fips": "51059", "name": "Fairfax County", "state": "VA" },
+        { "fips": "24031", "name": "Montgomery County", "state": "MD" },
+        { "fips": "24033", "name": "Prince George's County", "state": "MD" }
+      ],
+      "created_at": "2026-07-01T00:00:00Z"
+    },
+    {
+      "id": "center-004",
+      "name": "Boston",
+      "user_id": "ae6b8e59-13de-4ce8-902f-1e74ac3f96a5",
+      "counties": [
+        { "fips": "25025", "name": "Suffolk County", "state": "MA" },
+        { "fips": "25017", "name": "Middlesex County", "state": "MA" }
+      ],
+      "created_at": "2026-07-01T00:00:00Z"
+    },
+    {
+      "id": "center-005",
+      "name": "Nassau / Long Island",
+      "user_id": "ae6b8e59-13de-4ce8-902f-1e74ac3f96a5",
+      "counties": [
+        { "fips": "36059", "name": "Nassau County", "state": "NY" }
+      ],
+      "created_at": "2026-07-01T00:00:00Z"
+    },
+    {
+      "id": "center-006",
+      "name": "Albany",
+      "user_id": "ae6b8e59-13de-4ce8-902f-1e74ac3f96a5",
+      "counties": [
+        { "fips": "36001", "name": "Albany County", "state": "NY" },
+        { "fips": "36027", "name": "Dutchess County", "state": "NY" },
+        { "fips": "36055", "name": "Monroe County", "state": "NY" }
+      ],
+      "created_at": "2026-07-01T00:00:00Z"
+    },
+    {
+      "id": "center-007",
+      "name": "Connecticut",
+      "user_id": "ae6b8e59-13de-4ce8-902f-1e74ac3f96a5",
+      "counties": [
+        { "fips": "09001", "name": "Fairfield County", "state": "CT" }
+      ],
+      "created_at": "2026-07-01T00:00:00Z"
+    },
+    {
+      "id": "center-008",
+      "name": "Philadelphia",
+      "user_id": "ae6b8e59-13de-4ce8-902f-1e74ac3f96a5",
+      "counties": [
+        { "fips": "42101", "name": "Philadelphia County", "state": "PA" },
+        { "fips": "42071", "name": "Lancaster County", "state": "PA" },
+        { "fips": "34023", "name": "Middlesex County", "state": "NJ" }
+      ],
+      "created_at": "2026-07-01T00:00:00Z"
+    }
+  ]
+}

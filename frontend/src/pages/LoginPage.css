@@ -1,0 +1,84 @@
+.login-page {
+  min-height: 100dvh;
+  background: var(--navy);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--s4);
+}
+
+.login-card {
+  background: var(--surface);
+  border-radius: var(--r4);
+  box-shadow: var(--shadow-lg);
+  padding: var(--s8) var(--s8);
+  width: 100%;
+  max-width: 400px;
+}
+
+.login-brand {
+  text-align: center;
+  margin-bottom: var(--s8);
+}
+
+.login-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  background: rgba(59, 130, 246, 0.08);
+  border-radius: var(--r3);
+  margin-bottom: var(--s3);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.login-brand h1 {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -0.03em;
+  margin-bottom: 2px;
+}
+
+.login-brand p {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s4);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s1);
+}
+
+.login-error {
+  background: var(--active-bg);
+  color: var(--active-text);
+  border: 1px solid #FECACA;
+  border-radius: var(--r2);
+  padding: var(--s3) var(--s4);
+  font-size: 0.875rem;
+}
+
+.login-btn {
+  width: 100%;
+  padding: 11px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  margin-top: var(--s2);
+}
+
+.login-note {
+  margin-top: var(--s6);
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}

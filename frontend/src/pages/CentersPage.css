@@ -1,0 +1,89 @@
+.centers-page { display: flex; flex-direction: column; gap: var(--s6); }
+.centers-loading { display: flex; justify-content: center; padding: var(--s10); }
+
+.centers-page-header {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: var(--s4);
+}
+.centers-page-header h1 { margin-bottom: 4px; }
+.centers-page-header p { font-size: 0.875rem; color: var(--text-muted); }
+
+.centers-list { overflow: hidden; }
+
+.center-row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--s4); padding: var(--s4) var(--s5); flex-wrap: wrap;
+}
+.center-row-divider { border-top: 1px solid var(--border); }
+
+.center-row-info { flex: 1; min-width: 0; }
+.center-row-name { font-size: 0.9375rem; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+.center-row-meta { font-size: 0.8125rem; color: var(--text-muted); }
+.center-row-counties { color: var(--text-secondary); }
+
+.center-row-actions { display: flex; align-items: center; gap: var(--s2); flex-wrap: wrap; }
+.center-delete-btn { color: var(--active-border) !important; }
+
+.center-delete-confirm {
+  display: flex; align-items: center; gap: var(--s2);
+  background: var(--active-bg); border: 1px solid #FECACA;
+  border-radius: var(--r2); padding: var(--s2) var(--s3);
+  font-size: 0.8125rem; color: var(--active-text);
+}
+
+/* Center modal */
+.center-modal { max-width: 560px; }
+
+.center-modal-steps {
+  display: flex; align-items: center; gap: 0;
+  padding: var(--s4) var(--s6);
+  border-bottom: 1px solid var(--border);
+}
+
+.center-modal-step {
+  display: flex; align-items: center; gap: var(--s2);
+}
+.step-num {
+  width: 24px; height: 24px; border-radius: 50%;
+  background: var(--border); color: var(--text-muted);
+  font-size: 0.75rem; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+}
+.center-modal-step.done .step-num { background: var(--blue); color: #fff; }
+.step-label { font-size: 0.8125rem; font-weight: 500; color: var(--text-secondary); }
+.center-modal-step.done .step-label { color: var(--text); }
+.step-connector { flex: 1; height: 1px; background: var(--border); margin: 0 var(--s3); }
+
+.center-modal-step-body { display: flex; flex-direction: column; gap: var(--s3); }
+
+.county-search-wrap {
+  display: flex; align-items: center; gap: var(--s3);
+}
+.county-selected-count {
+  font-size: 0.8125rem; color: var(--blue); font-weight: 600;
+  white-space: nowrap; flex-shrink: 0;
+}
+
+.county-list {
+  max-height: 340px; overflow-y: auto;
+  border: 1px solid var(--border); border-radius: var(--r2);
+  background: var(--surface);
+}
+
+.county-group { padding: var(--s2) 0; }
+.county-group-label {
+  font-size: 0.6875rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--text-muted);
+  padding: var(--s2) var(--s4); sticky: top 0;
+}
+.county-group-divider { height: 1px; background: var(--border); margin: var(--s2) 0; }
+
+.county-row {
+  display: flex; align-items: center; gap: var(--s3);
+  padding: 7px var(--s4); cursor: pointer; transition: background 0.1s;
+}
+.county-row:hover { background: var(--surface-2); }
+
+.county-checkbox { width: 15px; height: 15px; cursor: pointer; flex-shrink: 0; accent-color: var(--blue); }
+.county-row-name { font-size: 0.875rem; color: var(--text); flex: 1; }
+.county-row-state { font-size: 0.75rem; color: var(--text-muted); }

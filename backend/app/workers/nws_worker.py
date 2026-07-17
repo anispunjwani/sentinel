@@ -10,7 +10,17 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.models.models import Event, Team, TeamCounty, AlertTier
 from app.workers.classifier import classify_nws_event
+from app.core.config import settings
 from app.core.database import AsyncSessionLocal
+
+
+def _truncate_summary(text: str | None) -> str | None:
+    """Bound summary size on insert to keep per-row storage small."""
+    if not text or settings.MAX_SUMMARY_LENGTH <= 0:
+        return text
+    if len(text) <= settings.MAX_SUMMARY_LENGTH:
+        return text
+    return text[: settings.MAX_SUMMARY_LENGTH].rstrip() + "…"
 
 logger = logging.getLogger(__name__)
 
@@ -86,7 +96,7 @@ def parse_nws_alert(feature: dict, team_id: str) -> dict | None:
         "tier": tier,
         "county_fips": county_fips,
         "headline": headline[:512],
-        "summary": summary,
+        "summary": _truncate_summary(summary),
         "source_url": source_url,
         "external_id": external_id,
         "issued_at": issued_at,

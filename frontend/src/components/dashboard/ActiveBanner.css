@@ -1,0 +1,74 @@
+.active-banner {
+  border-radius: var(--r3); padding: var(--s4) var(--s5);
+  border: 1px solid;
+}
+
+.active-banner-clear {
+  background: var(--success-bg); border-color: #BBF7D0;
+  display: flex; align-items: center; gap: var(--s3);
+}
+.active-banner-clear-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--success); flex-shrink: 0;
+}
+.active-banner-clear-text {
+  font-size: 0.875rem; font-weight: 500; color: var(--success);
+}
+
+.active-banner-alert {
+  background: #FFF5F5; border-color: #FECACA;
+}
+
+.active-banner-header {
+  margin-bottom: var(--s3);
+}
+
+.active-banner-title {
+  display: flex; align-items: center; gap: var(--s2);
+  font-size: 0.8125rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.05em; color: var(--active-text);
+}
+
+.active-banner-count {
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--active-border); color: #fff;
+  width: 18px; height: 18px; border-radius: 99px;
+  font-size: 0.6875rem; font-weight: 700;
+}
+
+.active-banner-list {
+  display: flex; flex-direction: column; gap: 2px;
+}
+
+.active-banner-item {
+  display: flex; align-items: center; gap: var(--s3);
+  padding: 7px var(--s3); border-radius: var(--r2);
+  background: none; border: none; cursor: pointer; text-align: left; width: 100%;
+  transition: background 0.1s;
+}
+.active-banner-item:hover { background: rgba(220,38,38,0.06); }
+
+.active-banner-item-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--active-border); flex-shrink: 0;
+}
+
+.active-banner-item-type {
+  font-size: 0.8125rem; font-weight: 600; color: var(--active-text); flex-shrink: 0;
+}
+
+.active-banner-item-center {
+  font-size: 0.8125rem; color: var(--text-secondary); flex: 1; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+.active-banner-item-time {
+  font-size: 0.75rem; color: var(--text-muted); flex-shrink: 0;
+}
+
+.active-banner-more {
+  background: none; border: none; cursor: pointer;
+  font-size: 0.8125rem; color: var(--active-border); font-weight: 500;
+  padding: var(--s2) var(--s3); text-align: left;
+}
+.active-banner-more:hover { text-decoration: underline; }

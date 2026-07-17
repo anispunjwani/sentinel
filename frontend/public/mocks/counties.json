@@ -1,0 +1,28 @@
+{
+  "counties": [
+    { "fips": "25025", "name": "Suffolk County", "state": "MA", "state_name": "Massachusetts" },
+    { "fips": "25017", "name": "Middlesex County", "state": "MA", "state_name": "Massachusetts" },
+    { "fips": "36055", "name": "Monroe County", "state": "NY", "state_name": "New York" },
+    { "fips": "36001", "name": "Albany County", "state": "NY", "state_name": "New York" },
+    { "fips": "36027", "name": "Dutchess County", "state": "NY", "state_name": "New York" },
+    { "fips": "36059", "name": "Nassau County", "state": "NY", "state_name": "New York" },
+    { "fips": "36005", "name": "Bronx County", "state": "NY", "state_name": "New York" },
+    { "fips": "36081", "name": "Queens County", "state": "NY", "state_name": "New York" },
+    { "fips": "36047", "name": "Kings County", "state": "NY", "state_name": "New York" },
+    { "fips": "36061", "name": "New York County", "state": "NY", "state_name": "New York" },
+    { "fips": "36085", "name": "Richmond County", "state": "NY", "state_name": "New York" },
+    { "fips": "09001", "name": "Fairfield County", "state": "CT", "state_name": "Connecticut" },
+    { "fips": "34023", "name": "Middlesex County", "state": "NJ", "state_name": "New Jersey" },
+    { "fips": "42101", "name": "Philadelphia County", "state": "PA", "state_name": "Pennsylvania" },
+    { "fips": "42071", "name": "Lancaster County", "state": "PA", "state_name": "Pennsylvania" },
+    { "fips": "24031", "name": "Montgomery County", "state": "MD", "state_name": "Maryland" },
+    { "fips": "24033", "name": "Prince George's County", "state": "MD", "state_name": "Maryland" },
+    { "fips": "51013", "name": "Arlington County", "state": "VA", "state_name": "Virginia" },
+    { "fips": "51059", "name": "Fairfax County", "state": "VA", "state_name": "Virginia" },
+    { "fips": "51087", "name": "Henrico County", "state": "VA", "state_name": "Virginia" },
+    { "fips": "51041", "name": "Chesterfield County", "state": "VA", "state_name": "Virginia" },
+    { "fips": "51085", "name": "Hanover County", "state": "VA", "state_name": "Virginia" },
+    { "fips": "51760", "name": "Richmond City", "state": "VA", "state_name": "Virginia" },
+    { "fips": "11001", "name": "Washington DC", "state": "DC", "state_name": "District of Columbia" }
+  ]
+}

@@ -140,27 +140,36 @@ The script will ask for your name, email, and a password. This creates:
 
 ### Step 7 — Run the dashboard (frontend)
 
-The frontend is a small React app in the `frontend/` folder. You need
+The frontend is a Vite + React PWA in the `frontend/` folder. You need
 [Node.js 18+](https://nodejs.org) installed.
+
+It has two modes, controlled by `VITE_USE_MOCKS`:
+
+- **Mock mode (default)** — runs standalone against bundled demo data in
+  `public/mocks/`. No backend needed. This is the mode used for stakeholder demos
+  (including on Replit).
+- **Live mode** — talks to the FastAPI backend at `VITE_API_URL` using your JWT.
 
 Open a **new terminal** (keep the backend running):
 
 ```bash
 cd frontend
-npm install        # first time only
+cp .env.example .env   # first time only
+npm install            # first time only
 npm run dev
 ```
 
-Open **http://localhost:5173** and sign in with the admin email and password you
-created in Step 6.
+Open **http://localhost:5173**.
 
-By default the app talks to the backend at `http://localhost:8000`. To point it
-elsewhere, copy `frontend/.env.example` to `frontend/.env` and set `VITE_API_URL`.
+- To explore the full UI with demo data, leave `VITE_USE_MOCKS=true` in `.env` and
+  log in with any email/password.
+- To use your real backend, set `VITE_USE_MOCKS=false` and `VITE_API_URL=http://localhost:8000`
+  in `.env`, then sign in with the admin account you created in Step 6.
 
-The dashboard shows events grouped by tier (Active / Monitor / Digest). You can
-review items, escalate them one tier, and generate a message from a template to
-copy and send. (Configuration screens and phone push notifications are not built
-yet — see the roadmap in `CLAUDE.md`.)
+The app is a complete dashboard: an Active Events banner, a 24h Digest summary,
+center cards, an events browser, and Centers / Templates / Settings screens. Phone
+push notifications are the one flow not yet wired end-to-end — see the roadmap in
+`CLAUDE.md`.
 
 ---
 
@@ -207,8 +216,22 @@ git push -u origin main
 | `VAPID_PUBLIC_KEY` | From Step 2 of local setup |
 | `VAPID_EMAIL` | Your email address |
 | `ENVIRONMENT` | `production` |
+| `CORS_ORIGINS` | Your frontend URL(s), comma-separated (e.g. `https://sentinel.up.railway.app`) |
 
 `DATABASE_URL` is already set by Railway — do not add it manually.
+
+**Important:** in `production`, the backend only accepts browser requests from the
+origins listed in `CORS_ORIGINS`. If the dashboard shows "failed to fetch" after
+deploy, this is almost always a missing or wrong `CORS_ORIGINS` value.
+
+**Optional database-size tuning** (sensible defaults are built in — see the
+free-tier notes in `CLAUDE.md`):
+
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `ARCHIVE_RETENTION_DAYS` | `180` | Hard-delete archived events older than this (`0` = keep forever) |
+| `MAX_SUMMARY_LENGTH` | `2000` | Truncate stored event summaries to this many characters |
+| `STORE_UNMATCHED_RSS` | `false` | Keep keyword-unmatched news articles (much larger DB if `true`) |
 
 ### Step 5 — Run the migration on Railway
 
