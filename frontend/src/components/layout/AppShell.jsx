@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../../lib/AuthContext'
 import './AppShell.css'
 
@@ -11,10 +12,23 @@ const NAV_ITEMS = [
 
 export default function AppShell({ children, currentPage, onNavigate }) {
   const { user, logout } = useAuth()
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef(null)
+
+  // Close the profile menu when clicking anywhere outside it.
+  useEffect(() => {
+    if (!menuOpen) return
+    function onPointerDown(e) {
+      if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(false)
+    }
+    document.addEventListener('mousedown', onPointerDown)
+    return () => document.removeEventListener('mousedown', onPointerDown)
+  }, [menuOpen])
 
   function nav(id) {
     window.location.hash = id
     onNavigate(id)
+    setMenuOpen(false)
   }
 
   const initials = user?.name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'U'
@@ -46,9 +60,17 @@ export default function AppShell({ children, currentPage, onNavigate }) {
 
         <div className="topnav-user">
           <span className="topnav-team hide-mobile">{user?.team_name?.split(' ').slice(0, 2).join(' ')}</span>
-          <div className="avatar-menu">
-            <div className="avatar">{initials}</div>
-            <div className="avatar-dropdown">
+          <div className="avatar-menu" ref={menuRef}>
+            <button
+              className="avatar"
+              onClick={() => setMenuOpen(o => !o)}
+              aria-haspopup="menu"
+              aria-expanded={menuOpen}
+              aria-label="Account menu"
+            >
+              {initials}
+            </button>
+            <div className={`avatar-dropdown ${menuOpen ? 'open' : ''}`}>
               <div className="avatar-dropdown-name">{user?.name}</div>
               <div className="avatar-dropdown-email">{user?.email}</div>
               <div className="avatar-dropdown-divider" />
