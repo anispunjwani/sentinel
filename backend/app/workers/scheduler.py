@@ -63,8 +63,21 @@ async def run_archive_worker():
             DELETE FROM events WHERE created_at < :cutoff
         """), {"cutoff": cutoff})
 
+        # Retention purge: hard-delete old archive rows so event_archive does not
+        # grow unbounded. This is what keeps total DB size under the free-tier cap.
+        purged = 0
+        if settings.ARCHIVE_RETENTION_DAYS > 0:
+            purge_cutoff = datetime.utcnow() - timedelta(days=settings.ARCHIVE_RETENTION_DAYS)
+            purge_result = await db.execute(text("""
+                DELETE FROM event_archive WHERE archived_at < :cutoff
+            """), {"cutoff": purge_cutoff})
+            purged = purge_result.rowcount or 0
+
         await db.commit()
-        logger.info(f"Archive worker: archived events older than {settings.ARCHIVE_AFTER_DAYS} days")
+        logger.info(
+            f"Archive worker: archived events older than {settings.ARCHIVE_AFTER_DAYS} days; "
+            f"purged {purged} archive rows older than {settings.ARCHIVE_RETENTION_DAYS} days"
+        )
 
 
 def start_scheduler():

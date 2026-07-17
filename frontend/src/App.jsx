@@ -1,24 +1,55 @@
 import { useState, useEffect } from 'react'
-import { getMe, getToken, clearToken } from './api.js'
-import Login from './components/Login.jsx'
-import Dashboard from './components/Dashboard.jsx'
+import { AuthProvider, useAuth } from './lib/AuthContext'
+import LoginPage from './pages/LoginPage'
+import AppShell from './components/layout/AppShell'
+import DashboardPage from './pages/DashboardPage'
+import EventsPage from './pages/EventsPage'
+import CentersPage from './pages/CentersPage'
+import TemplatesPage from './pages/TemplatesPage'
+import SettingsPage from './pages/SettingsPage'
 
-export default function App() {
-  const [user, setUser] = useState(null)
-  const [loading, setLoading] = useState(true)
+function Router() {
+  const { user, loading } = useAuth()
+  const [page, setPage] = useState('dashboard')
 
-  // On load, if we already have a token, try to resume the session.
+  // Simple hash-based routing
   useEffect(() => {
-    if (!getToken()) { setLoading(false); return }
-    getMe().then(setUser).catch(() => clearToken()).finally(() => setLoading(false))
+    const onHash = () => {
+      const hash = window.location.hash.replace('#', '') || 'dashboard'
+      setPage(hash)
+    }
+    onHash()
+    window.addEventListener('hashchange', onHash)
+    return () => window.removeEventListener('hashchange', onHash)
   }, [])
 
-  function logout() {
-    clearToken()
-    setUser(null)
+  if (loading) return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100dvh' }}>
+      <div className="spinner" />
+    </div>
+  )
+
+  if (!user) return <LoginPage />
+
+  const pages = {
+    dashboard: <DashboardPage />,
+    events: <EventsPage />,
+    centers: <CentersPage />,
+    templates: <TemplatesPage />,
+    settings: <SettingsPage />,
   }
 
-  if (loading) return <div className="center muted">Loading…</div>
-  if (!user) return <Login onLogin={setUser} />
-  return <Dashboard user={user} onLogout={logout} />
+  return (
+    <AppShell currentPage={page} onNavigate={setPage}>
+      {pages[page] || <DashboardPage />}
+    </AppShell>
+  )
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <Router />
+    </AuthProvider>
+  )
 }

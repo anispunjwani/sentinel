@@ -1,0 +1,87 @@
+.center-card {
+  display: flex; flex-direction: column;
+  border-left: 4px solid transparent;
+  transition: box-shadow 0.15s, transform 0.1s;
+  cursor: default;
+}
+.center-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+
+.center-card-active  { border-left-color: var(--active-border); }
+.center-card-monitor { border-left-color: var(--monitor-border); }
+.center-card-quiet   { border-left-color: var(--border); }
+
+.center-card-header {
+  padding: var(--s4) var(--s5) var(--s3);
+  border-bottom: 1px solid var(--border);
+}
+
+.center-card-title-row {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: var(--s2);
+}
+
+.center-card-name {
+  font-size: 1rem; font-weight: 700; color: var(--text);
+}
+
+.center-card-status-dot {
+  width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+}
+.center-dot-active  { background: var(--active-dot); animation: pulse-ring 2s ease-out infinite; }
+.center-dot-monitor { background: var(--monitor-dot); }
+.center-dot-quiet   { background: var(--border-strong); }
+
+.center-card-badges { display: flex; gap: var(--s2); flex-wrap: wrap; }
+
+.center-card-body { padding: var(--s3) var(--s4); flex: 1; }
+
+.center-card-empty {
+  font-size: 0.8125rem; color: var(--text-muted);
+  font-style: italic; padding: var(--s3) 0;
+}
+
+.center-card-events { display: flex; flex-direction: column; gap: var(--s2); }
+
+.center-card-footer {
+  padding: var(--s3) var(--s4);
+  border-top: 1px solid var(--border);
+}
+
+.center-card-view-all {
+  background: none; border: none; cursor: pointer;
+  font-size: 0.8125rem; color: var(--blue); font-weight: 500;
+}
+.center-card-view-all:hover { text-decoration: underline; }
+
+/* Center detail modal filters */
+.center-detail-filters {
+  display: flex; gap: var(--s2); padding: var(--s3) var(--s6);
+  border-bottom: 1px solid var(--border); flex-shrink: 0;
+}
+
+.filter-tab {
+  background: none; border: 1px solid transparent;
+  border-radius: var(--r2); padding: 4px 10px;
+  font-size: 0.8125rem; color: var(--text-secondary);
+  cursor: pointer; transition: all 0.1s;
+}
+.filter-tab:hover { background: var(--surface-2); }
+.filter-tab.active {
+  background: var(--surface-2); border-color: var(--border-strong);
+  color: var(--text); font-weight: 500;
+}
+
+.center-detail-events { display: flex; flex-direction: column; gap: var(--s3); }
+
+.center-county-list {
+  margin-top: var(--s6); padding-top: var(--s4);
+  border-top: 1px solid var(--border);
+}
+.center-county-list summary {
+  font-size: 0.8125rem; color: var(--text-muted); cursor: pointer;
+  user-select: none; font-weight: 500;
+}
+.center-county-names {
+  margin-top: var(--s3); font-size: 0.8125rem;
+  color: var(--text-secondary); line-height: 1.6;
+}

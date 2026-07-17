@@ -22,9 +22,16 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+def _cors_origins() -> list[str]:
+    """Allow all origins in development; in production use the configured list."""
+    if settings.ENVIRONMENT == "development":
+        return ["*"]
+    return [o.strip() for o in settings.CORS_ORIGINS.split(",") if o.strip()]
+
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"] if settings.ENVIRONMENT == "development" else ["https://your-railway-domain.up.railway.app"],
+    allow_origins=_cors_origins(),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

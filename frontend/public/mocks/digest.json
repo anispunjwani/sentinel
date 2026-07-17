@@ -1,0 +1,66 @@
+{
+  "generated_at": "2026-07-09T19:00:00Z",
+  "period_start": "2026-07-08T19:00:00Z",
+  "period_end": "2026-07-09T19:00:00Z",
+  "total_events": 10,
+  "by_center": [
+    {
+      "center_name": "Connecticut",
+      "total": 1,
+      "breakdown": [
+        { "event_type": "Tornado Warning", "tier": "active", "count": 1 }
+      ]
+    },
+    {
+      "center_name": "Richmond",
+      "total": 1,
+      "breakdown": [
+        { "event_type": "Major Power Outage", "tier": "active", "count": 1 }
+      ]
+    },
+    {
+      "center_name": "NYC",
+      "total": 1,
+      "breakdown": [
+        { "event_type": "Severe Thunderstorm Watch", "tier": "monitor", "count": 1 }
+      ]
+    },
+    {
+      "center_name": "Nassau / Long Island",
+      "total": 1,
+      "breakdown": [
+        { "event_type": "Tropical Storm Watch", "tier": "monitor", "count": 1 }
+      ]
+    },
+    {
+      "center_name": "DC Metro",
+      "total": 2,
+      "breakdown": [
+        { "event_type": "Protest", "tier": "monitor", "count": 1 },
+        { "event_type": "Coastal Flood Statement", "tier": "digest", "count": 1 }
+      ]
+    },
+    {
+      "center_name": "Philadelphia",
+      "total": 2,
+      "breakdown": [
+        { "event_type": "Major Road Closure", "tier": "monitor", "count": 1 },
+        { "event_type": "Air Quality Alert", "tier": "digest", "count": 1 }
+      ]
+    },
+    {
+      "center_name": "Boston",
+      "total": 1,
+      "breakdown": [
+        { "event_type": "Heat Advisory", "tier": "digest", "count": 1 }
+      ]
+    },
+    {
+      "center_name": "Albany",
+      "total": 1,
+      "breakdown": [
+        { "event_type": "Dense Fog Advisory", "tier": "digest", "count": 1 }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+.event-card {
+  display: flex; cursor: pointer;
+  border-radius: var(--r2); overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  transition: box-shadow 0.15s, transform 0.1s;
+}
+.event-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+
+.event-card-tier-bar { width: 4px; flex-shrink: 0; }
+.event-card-active  .event-card-tier-bar { background: var(--active-border); }
+.event-card-monitor .event-card-tier-bar { background: var(--monitor-border); }
+.event-card-digest  .event-card-tier-bar { background: var(--digest-border); }
+
+.event-card-body {
+  padding: var(--s3) var(--s4); flex: 1; min-width: 0;
+  display: flex; flex-direction: column; gap: 4px;
+}
+
+.event-card-top {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--s2);
+}
+
+.event-card-time {
+  font-size: 0.6875rem; color: var(--text-muted); flex-shrink: 0;
+}
+
+.event-card-type {
+  font-size: 0.8125rem; font-weight: 700;
+  color: var(--text); text-transform: uppercase; letter-spacing: 0.03em;
+}
+
+.event-card-headline {
+  font-size: 0.8125rem; color: var(--text-secondary);
+  line-height: 1.4; display: -webkit-box;
+  -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+
+.event-card-location {
+  font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;
+}
+
+/* Compact variant (used in center cards) */
+.event-card-compact .event-card-body { padding: var(--s2) var(--s3); }
+.event-card-compact .event-card-headline { -webkit-line-clamp: 1; }
+.event-card-compact .event-card-type { font-size: 0.75rem; }

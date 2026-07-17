@@ -1,0 +1,25 @@
+{
+  "templates": [
+    {
+      "id": "tmpl-001",
+      "team_id": "61a4646e-8e47-4fda-9a57-7aa7908430ee",
+      "name": "Active Alert — General",
+      "body": "[{{severity}}] {{event_type}} — {{county}}\n\nAs of {{time}}, {{source}} has issued a {{event_type}} for {{county}}.\n\n{{summary}}\n\nSource: {{source_link}}\n— {{team_name}}",
+      "created_at": "2026-07-01T00:00:00Z"
+    },
+    {
+      "id": "tmpl-002",
+      "team_id": "61a4646e-8e47-4fda-9a57-7aa7908430ee",
+      "name": "Monitor — Situation Update",
+      "body": "[MONITOR] {{event_type}} — {{county}}\n\nSituation developing as of {{time}}.\n\n{{summary}}\n\nWe are monitoring this event and will provide updates as needed.\nSource: {{source_link}}\n— {{team_name}}",
+      "created_at": "2026-07-01T00:00:00Z"
+    },
+    {
+      "id": "tmpl-003",
+      "team_id": "61a4646e-8e47-4fda-9a57-7aa7908430ee",
+      "name": "All Clear",
+      "body": "[ALL CLEAR] {{event_type}} — {{county}}\n\nThe {{event_type}} for {{county}} has ended as of {{time}}.\n\nNo further action required at this time.\n— {{team_name}}",
+      "created_at": "2026-07-01T00:00:00Z"
+    }
+  ]
+}

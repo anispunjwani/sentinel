@@ -9,11 +9,21 @@ import logging
 from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from app.models.models import Event, Team, TeamRSSSource, TeamKeyword
+from app.models.models import Event, Team, TeamRSSSource, TeamKeyword, AlertTier
 from app.workers.classifier import classify_rss_event
+from app.core.config import settings
 from app.core.database import AsyncSessionLocal
 
 logger = logging.getLogger(__name__)
+
+
+def _truncate_summary(text: str | None) -> str | None:
+    """Bound summary size on insert to keep per-row storage small."""
+    if not text or settings.MAX_SUMMARY_LENGTH <= 0:
+        return text
+    if len(text) <= settings.MAX_SUMMARY_LENGTH:
+        return text
+    return text[: settings.MAX_SUMMARY_LENGTH].rstrip() + "…"
 
 
 async def fetch_feed(url: str) -> list[dict]:
@@ -54,7 +64,7 @@ def parse_entry(entry, source_label: str, team_id: str, keywords: list[str], sou
         "tier": tier,
         "county_fips": None,
         "headline": title[:512],
-        "summary": summary,
+        "summary": _truncate_summary(summary),
         "source_url": link,
         "external_id": external_id,
         "issued_at": issued_at,
@@ -93,6 +103,12 @@ async def run_rss_worker():
                 for entry in entries:
                     parsed = parse_entry(entry, source.label, str(team.id), keywords, source.url)
                     if not parsed:
+                        continue
+
+                    # Skip keyword-unmatched news (Digest tier) unless configured
+                    # to keep it. This is the dominant DB-growth driver on the
+                    # free tier — most RSS articles are irrelevant general news.
+                    if parsed["tier"] == AlertTier.DIGEST and not settings.STORE_UNMATCHED_RSS:
                         continue
 
                     # Deduplication
