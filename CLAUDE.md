@@ -11,12 +11,21 @@ alert sources (NWS, RSS, later FEMA), classifies events into three tiers
 (Active / Monitor / Digest), stores them in PostgreSQL, and (eventually) pushes
 notifications to a PWA frontend. Multi-tenant by `Team`. Deploys to Railway.
 
-**Current state:** ingestion backend + REST API (Phases A–C) are built and
-running. A **complete demo frontend** (Vite + React PWA) has now been built
-against mock data, intended to run standalone in Replit for stakeholder demos
-before being wired to the live Railway backend. Remaining on the backend: PWA
-push subscription loop. Remaining on the frontend: wiring to live API (currently
-mock-only), real push subscription registration.
+**Current state (LIVE):** the full stack is deployed and running end-to-end.
+- **Frontend (dashboard):** https://sentinel-68y.pages.dev — Vite + React PWA on
+  Cloudflare Pages, wired to the live backend (`VITE_USE_MOCKS=false`).
+- **Backend (API):** https://sentinel-production-249d.up.railway.app — FastAPI +
+  APScheduler workers + PostgreSQL on Railway (`/health`, `/docs`).
+- Log in with the admin account created by `python seed.py` in the Railway shell.
+
+Phases A–C (ingestion + REST API) and **Phase 2 (frontend wired to live backend)**
+are complete. The frontend can still run standalone on mock data (`VITE_USE_MOCKS=true`)
+for demos. **Remaining = Phase 3: push notifications** — `/api/push/*` subscribe
+endpoints, `public/sw.js` service worker, PWA icons, and wiring the Settings
+"Enable Notifications" button to register a subscription.
+
+Deployment specifics (root dir, port 8080, sync migrations, CORS, Cloudflare Pages
+build config) are documented in `README.md` §3 / §3.5 and its Troubleshooting section.
 
 ## Running locally (Docker — the reliable path on Windows)
 
@@ -93,15 +102,23 @@ Local (non-Replit) dev: `cd frontend && npm install && npm run dev` (→ :5173).
 ## API surface (Phases A–C, all team-scoped + JWT-gated)
 
 ```
-auth:      POST /api/auth/login   GET /api/auth/me
+auth:      POST /api/auth/login   GET /api/auth/me (returns team_name)
 events:    GET /api/events   POST /api/events (manual)   GET /api/events/{id}
            PATCH /api/events/{id}/review   POST /api/events/{id}/escalate (push on Active)
+           POST /api/events/{id}/deescalate (demote to Digest)
 templates: GET /api/templates   GET /api/templates/variables   POST /api/templates/{id}/render
+           POST /api/templates   PUT /api/templates/{id}   DELETE /api/templates/{id}
 config:    GET counties|keywords|rss-sources   +  POST/PATCH/DELETE (admin-only)
 reports:   GET /api/digest   GET /api/export/incidents.csv
 ```
 
-**Not yet built, needed for frontend to go fully live:**
+Note on live-mode shape reconciliation (in `frontend/src/lib/api.js`): the backend
+returns bare arrays and lacks `center_name`; the client normalizes list responses to
+`{events|templates|counties: [...]}`, derives each event's `center_name` from its
+`county_fips` against the localStorage centers, and computes the 24h by-center digest
+client-side (the backend `/api/digest` is Digest-tier-only, grouped by county).
+
+**Still not built (Phase 3 — push notifications):**
 ```
 push:      POST /api/push/subscribe   DELETE /api/push/subscribe   GET /api/push/vapid-key
 centers:   No backend equivalent — centers are intentionally client-side only (see below)

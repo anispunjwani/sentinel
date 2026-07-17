@@ -5,10 +5,34 @@ A free, open-source event aggregation and alert dashboard for volunteer and prof
 
 ---
 
+## 🚀 Live Deployment
+
+The app is deployed and running:
+
+| What | URL |
+|------|-----|
+| **Dashboard (open this to use the app)** | https://sentinel-68y.pages.dev |
+| **API (backend)** | https://sentinel-production-249d.up.railway.app |
+| Backend health check | https://sentinel-production-249d.up.railway.app/health |
+| Interactive API docs (Swagger) | https://sentinel-production-249d.up.railway.app/docs |
+
+**How to log in:** open the **Dashboard** URL and sign in with the admin **email + password**
+that were created when the database was seeded (`python seed.py`). Your session persists
+until you explicitly log out (tap the avatar top-right → **Log out**).
+
+**Architecture:** Cloudflare Pages (static React PWA) → Railway (FastAPI + background workers)
+→ Railway PostgreSQL. The frontend calls the backend at `VITE_API_URL`; the backend only
+accepts browser requests from the origins listed in `CORS_ORIGINS`.
+
+> Everything below is for running Sentinel **locally** or deploying **your own** copy.
+
+---
+
 ## Table of Contents
 1. [What You Need Before Starting](#1-what-you-need-before-starting)
 2. [Local Development Setup](#2-local-development-setup)
-3. [Deploy to Railway](#3-deploy-to-railway)
+3. [Deploy to Railway (backend)](#3-deploy-to-railway)
+3.5. [Deploy the Frontend to Cloudflare Pages](#35-deploy-the-frontend-to-cloudflare-pages)
 4. [First Run — Seed the Database](#4-first-run--seed-the-database)
 5. [Install the App on Your Phone](#5-install-the-app-on-your-phone)
 6. [Adding Keywords](#6-adding-keywords)
@@ -195,13 +219,17 @@ git push -u origin main
 2. Click **New Project**
 3. Choose **Deploy from GitHub repo**
 4. Select your `sentinel` repository
-5. Railway will detect the `railway.toml` and start building
+5. **⚠️ Set the Root Directory to `backend`** — click the service → **Settings → Source
+   → Root Directory** → `backend`. The backend lives in a subfolder, so without this the
+   Docker build fails on `COPY requirements.txt`. Railway reads `backend/railway.toml`.
 
 ### Step 3 — Add a PostgreSQL database
 
 1. In your Railway project, click **+ New**
 2. Choose **Database → Add PostgreSQL**
-3. Railway automatically sets `DATABASE_URL` for you — no action needed
+3. Wire it into the backend: backend service → **Variables** → **New Variable** →
+   `DATABASE_URL` = `${{Postgres.DATABASE_URL}}` (Railway autocompletes the reference).
+   Services do **not** share the DB URL automatically — you must add this reference.
 
 ### Step 4 — Set environment variables in Railway
 
@@ -216,9 +244,12 @@ git push -u origin main
 | `VAPID_PUBLIC_KEY` | From Step 2 of local setup |
 | `VAPID_EMAIL` | Your email address |
 | `ENVIRONMENT` | `production` |
-| `CORS_ORIGINS` | Your frontend URL(s), comma-separated (e.g. `https://sentinel.up.railway.app`) |
+| `CORS_ORIGINS` | Your frontend URL(s), comma-separated (e.g. `https://sentinel-68y.pages.dev`) |
 
-`DATABASE_URL` is already set by Railway — do not add it manually.
+`DATABASE_URL` was wired in Step 3 as a reference — do not paste a raw connection string.
+
+The app listens on `${PORT}`; if the generated domain shows **502 Bad Gateway**, set a
+`PORT` variable (e.g. `8080`) and make the domain's **target port** match it.
 
 **Important:** in `production`, the backend only accepts browser requests from the
 origins listed in `CORS_ORIGINS`. If the dashboard shows "failed to fetch" after
@@ -267,7 +298,42 @@ admin account.
 1. Click your backend service in Railway
 2. Go to **Settings → Networking**
 3. Click **Generate Domain**
-4. Your app is live at `https://something.up.railway.app`
+4. Your API is live at `https://something.up.railway.app` — verify `/health` returns
+   `{"status":"ok","app":"Sentinel"}`. **Save this URL** — the frontend needs it next.
+
+---
+
+## 3.5 Deploy the Frontend to Cloudflare Pages
+
+The dashboard is a static Vite/React app. Cloudflare Pages hosts it for free.
+
+1. Cloudflare dashboard → **Workers & Pages** → **Create** → **Pages** tab → **Connect to
+   Git** (use **Pages**, *not* the Workers "import a repository" flow — that path requires
+   Vite 6 and will fail on this project's Vite 5).
+2. Select the `sentinel` repo, branch `main`.
+3. Build settings:
+   - **Root directory:** `frontend`
+   - **Build command:** `npm run build`
+   - **Build output directory:** `dist`
+4. Environment variables (build-time — `VITE_` vars are baked in at build):
+   ```
+   VITE_USE_MOCKS = false
+   VITE_API_URL   = https://<your-railway-domain>.up.railway.app
+   ```
+5. **Save and Deploy.** You get a stable URL like `https://sentinel-xxxx.pages.dev` plus a
+   per-deploy `https://<hash>.sentinel-xxxx.pages.dev` alias.
+6. **Wire CORS:** back in Railway, set `CORS_ORIGINS` to include **both** URLs, comma-separated:
+   ```
+   https://sentinel-xxxx.pages.dev,https://<hash>.sentinel-xxxx.pages.dev
+   ```
+   Saving redeploys the backend. Without this the browser shows **"failed to fetch"** (CORS).
+
+Open the `*.pages.dev` URL and log in. Since it's a PWA, you can also add it to your phone's
+home screen (see section 5).
+
+> **Local vs live:** the same frontend runs against mock data with `VITE_USE_MOCKS=true`
+> (no backend needed — good for demos), or against a real backend with `VITE_USE_MOCKS=false`
+> and `VITE_API_URL` set. See `frontend/.env.example`.
 
 ---
 
@@ -329,6 +395,26 @@ Check that your iOS version is 16.4 or later. Go to Settings → General → Sof
 
 **The app says "No events" on the dashboard**
 The NWS worker runs every 5 minutes. Wait a few minutes after startup and refresh. If your coverage area has no active weather alerts, the Active section will be empty — that's correct behavior.
+
+**Frontend shows "failed to fetch" on login (deployed)**
+This is almost always CORS. Set `CORS_ORIGINS` on the Railway backend to your exact frontend
+origin(s) — https, no trailing slash, comma-separated. If the request URL in the browser's
+Network tab points at `localhost:8000`, then `VITE_API_URL` wasn't set at build time — set it
+in Cloudflare Pages and redeploy (`VITE_` vars are build-time).
+
+**Railway domain returns 502 Bad Gateway**
+Port mismatch. The app listens on `${PORT}`; set a `PORT` variable (e.g. `8080`) and make the
+domain's target port match. Check the deploy logs for `Uvicorn running on http://0.0.0.0:<port>`.
+
+**`alembic upgrade head` hangs on Railway**
+A stale lock from a prior failed deploy. Restart the PostgreSQL service to drop connections,
+then re-run. (Migrations use a synchronous psycopg2 driver; they are a manual one-time step,
+not run on boot.)
+
+**Login returns 401 after deploy**
+The deployed database has its own admin account (created by `python seed.py` in the Railway
+shell) — separate from your local one. Use the credentials you set on Railway, or reset them
+in the Railway shell.
 
 **Need to add a second team member?**
 Go to **Configuration → Team Members → Invite**. They will receive a setup email.
