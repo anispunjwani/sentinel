@@ -103,7 +103,9 @@ export async function login(email, password) {
   setToken(data.access_token);
   const user = await getMe();
   storeUser(user);
-  return data;
+  // Return the user alongside the token so callers (LoginPage) can set auth
+  // state — matching the mock login's shape.
+  return { ...data, user };
 }
 
 export async function getMe() {

@@ -173,8 +173,10 @@ label { font-size: 0.8125rem; font-weight: 500; color: var(--text-secondary); di
 
 /* ── Overlay / modal backdrop ───────────────────────────────────────────── */
 .overlay {
-  position: fixed; inset: 0; background: rgba(15,25,35,0.6);
-  z-index: 100; backdrop-filter: blur(2px);
+  position: fixed; inset: 0; background: rgba(15,25,35,0.72);
+  z-index: 100;
+  /* No backdrop-filter: blurring the dashboard's infinite pulse animations
+     behind the modal causes a per-frame repaint storm that flickers. */
   display: flex; align-items: flex-end; justify-content: flex-end;
 }
 @media (min-width: 768px) {
