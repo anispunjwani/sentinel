@@ -18,5 +18,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY . .
 
-# Run the application
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Run the application. Use `sh -c` so ${PORT} (injected by Railway) is expanded
+# by a shell; falls back to 8000 locally. An exec-form array without a shell
+# would pass "${PORT}" to uvicorn literally and fail with an invalid-port error.
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]

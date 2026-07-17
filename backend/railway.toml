@@ -3,12 +3,10 @@ builder = "dockerfile"
 dockerfilePath = "Dockerfile"
 
 [deploy]
-# Start the API directly. Migrations are run as an explicit one-time step in the
-# Railway shell (`alembic upgrade head`), NOT on boot: a blocked migration (e.g.
-# lock contention from an overlapping zero-downtime deploy) would otherwise hang
-# the whole service and fail the healthcheck. ${PORT:-8000} keeps it working
-# whether or not Railway injects PORT.
-startCommand = "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"
+# No startCommand here on purpose: the Dockerfile CMD (`sh -c "uvicorn ... --port
+# ${PORT:-8000}"`) starts the API and expands $PORT via a shell. Migrations are a
+# separate one-time step (`alembic upgrade head` in the Railway shell), NOT run on
+# boot, so a lock-blocked migration can never hang the service / fail healthcheck.
 healthcheckPath = "/health"
 healthcheckTimeout = 300
 restartPolicyType = "on_failure"
